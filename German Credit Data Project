@@ -1,5 +1,3 @@
-# german_credit_risk.py
-
 # Import required libraries
 import pandas as pd
 import seaborn as sns
@@ -11,9 +9,9 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from sklearn.impute import SimpleImputer
-import openml  # To fetch the dataset
+from sklearn.datasets import fetch_openml
 
 # 1. Load and Explore the Dataset
 def load_and_explore_data():
@@ -25,7 +23,7 @@ def load_and_explore_data():
     print(df.head())
 
     # Check class balance
-    sns.countplot(x='class', data=df)
+    sns.countplot(x='class', hue='class', data=df, palette="coolwarm", legend=False)
     plt.title("Class Distribution: Good vs. Bad Credit Risk")
     plt.show()
 
@@ -38,13 +36,13 @@ def preprocess_data(df):
     y = df['class'].apply(lambda x: 1 if x == 'bad' else 0)  # Convert to binary (1 = bad credit, 0 = good credit)
 
     # Identify categorical & numerical columns
-    categorical_features = X.select_dtypes(include=['object']).columns
-    numerical_features = X.select_dtypes(exclude=['object']).columns
+    categorical_features = X.select_dtypes(include=['category', 'object']).columns
+    numerical_features = X.select_dtypes(exclude=['category', 'object']).columns
 
     # Create preprocessing pipeline
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('encoder', OneHotEncoder(handle_unknown='ignore'))
+        ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ])
 
     numerical_transformer = Pipeline(steps=[
@@ -58,7 +56,7 @@ def preprocess_data(df):
     ])
 
     # Split into training & test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     # Transform data
     X_train = preprocessor.fit_transform(X_train)
@@ -80,8 +78,17 @@ def train_and_evaluate_models(X_train, X_test, y_train, y_test):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
-        print(f"{name} Accuracy: {accuracy:.2f}")
+
+        print(f"\n{name} Accuracy: {accuracy:.2f}")
         print(classification_report(y_test, y_pred))
+
+        # Confusion Matrix Visualization
+        cm = confusion_matrix(y_test, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Good", "Bad"], yticklabels=["Good", "Bad"])
+        plt.title(f'Confusion Matrix for {name}')
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        plt.show()
 
 # Main function to run the entire workflow
 def main():
