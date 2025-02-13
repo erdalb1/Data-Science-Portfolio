@@ -1,85 +1,98 @@
 # german_credit_risk.py
 
-# Import necessary libraries
-import openml  # For loading the dataset from OpenML
-import pandas as pd  # For data manipulation
-import seaborn as sns  # For data visualization
-import matplotlib.pyplot as plt  # For data visualization
-from sklearn.model_selection import train_test_split  # For splitting the data
-from sklearn.preprocessing import StandardScaler, OneHotEncoder  # For preprocessing
-from sklearn.pipeline import Pipeline  # For pipeline creation
-from sklearn.compose import ColumnTransformer  # For transforming data columns
-from sklearn.impute import SimpleImputer  # For handling missing values
-from sklearn.linear_model import LogisticRegression  # For Logistic Regression model
-from sklearn.tree import DecisionTreeClassifier  # For Decision Tree model
-from sklearn.ensemble import RandomForestClassifier  # For Random Forest model
-from sklearn.metrics import classification_report, accuracy_score  # For evaluating the model
+# Import required libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.impute import SimpleImputer
+import openml  # To fetch the dataset
 
-# Step 1: Load & Explore the Dataset
+# 1. Load and Explore the Dataset
+def load_and_explore_data():
+    # Load dataset from OpenML
+    dataset = openml.datasets.get_dataset(31)  # ID for German Credit Dataset
+    df, _, _, _ = dataset.get_data()
 
-# Load the German Credit dataset from OpenML
-dataset = openml.datasets.get_dataset(31)  # Dataset ID for German Credit dataset
-df, _, _, _ = dataset.get_data()
+    # Display first few rows of the data
+    print(df.head())
 
-# Display the first few rows of the dataset
-print(df.head())
+    # Check class balance
+    sns.countplot(x='class', data=df)
+    plt.title("Class Distribution: Good vs. Bad Credit Risk")
+    plt.show()
 
-# Visualize the class distribution (Good vs Bad Credit)
-sns.countplot(x='class', data=df)
-plt.title("Class Distribution: Good vs. Bad Credit Risk")
-plt.show()
+    return df
 
-# Step 2: Data Preprocessing
+# 2. Data Preprocessing: Handle missing values, encode categorical features, and scale numerical data
+def preprocess_data(df):
+    # Separate features and target variable
+    X = df.drop(columns=['class'])
+    y = df['class'].apply(lambda x: 1 if x == 'bad' else 0)  # Convert to binary (1 = bad credit, 0 = good credit)
 
-# Separate features (X) and target (y)
-X = df.drop(columns=['class'])
-y = df['class'].apply(lambda x: 1 if x == 'bad' else 0)  # Convert to binary: 1 = bad, 0 = good
+    # Identify categorical & numerical columns
+    categorical_features = X.select_dtypes(include=['object']).columns
+    numerical_features = X.select_dtypes(exclude=['object']).columns
 
-# Identify categorical and numerical columns
-categorical_features = X.select_dtypes(include=['object']).columns
-numerical_features = X.select_dtypes(exclude=['object']).columns
+    # Create preprocessing pipeline
+    categorical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(handle_unknown='ignore'))
+    ])
 
-# Create preprocessing pipeline for categorical data
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='most_frequent')),  # Handle missing categorical values
-    ('encoder', OneHotEncoder(handle_unknown='ignore'))  # Encode categorical features
-])
+    numerical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='mean')),
+        ('scaler', StandardScaler())
+    ])
 
-# Create preprocessing pipeline for numerical data
-numerical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),  # Handle missing numerical values
-    ('scaler', StandardScaler())  # Scale numerical features
-])
+    preprocessor = ColumnTransformer(transformers=[
+        ('num', numerical_transformer, numerical_features),
+        ('cat', categorical_transformer, categorical_features)
+    ])
 
-# Combine transformations using ColumnTransformer
-preprocessor = ColumnTransformer(transformers=[
-    ('num', numerical_transformer, numerical_features),
-    ('cat', categorical_transformer, categorical_features)
-])
+    # Split into training & test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Split the dataset into training and testing sets (80% train, 20% test)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Transform data
+    X_train = preprocessor.fit_transform(X_train)
+    X_test = preprocessor.transform(X_test)
 
-# Apply transformations to the data
-X_train = preprocessor.fit_transform(X_train)
-X_test = preprocessor.transform(X_test)
+    return X_train, X_test, y_train, y_test
 
-# Step 3: Train Machine Learning Models
+# 3. Train and Evaluate Machine Learning Models
+def train_and_evaluate_models(X_train, X_test, y_train, y_test):
+    # Define the models to train
+    models = {
+        "Logistic Regression": LogisticRegression(),
+        "Decision Tree": DecisionTreeClassifier(),
+        "Random Forest": RandomForestClassifier(n_estimators=100)
+    }
 
-# Define a dictionary of models to evaluate
-models = {
-    "Logistic Regression": LogisticRegression(),
-    "Decision Tree": DecisionTreeClassifier(),
-    "Random Forest": RandomForestClassifier(n_estimators=100)
-}
+    # Train models and evaluate performance
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        print(f"{name} Accuracy: {accuracy:.2f}")
+        print(classification_report(y_test, y_pred))
 
-# Loop through each model, train, predict, and evaluate
-for name, model in models.items():
-    model.fit(X_train, y_train)  # Train the model
-    y_pred = model.predict(X_test)  # Make predictions
-    accuracy = accuracy_score(y_test, y_pred)  # Calculate accuracy
-    print(f"{name} Accuracy: {accuracy:.2f}")
-    print(classification_report(y_test, y_pred))  # Print classification report
+# Main function to run the entire workflow
+def main():
+    # Step 1: Load and explore the dataset
+    df = load_and_explore_data()
 
-# Step 4: Next Steps
-# After evaluating the models, consider hyperparameter tuning and feature selection to improve performance.
+    # Step 2: Preprocess the data
+    X_train, X_test, y_train, y_test = preprocess_data(df)
+
+    # Step 3: Train models and evaluate their performance
+    train_and_evaluate_models(X_train, X_test, y_train, y_test)
+
+if __name__ == "__main__":
+    main()
