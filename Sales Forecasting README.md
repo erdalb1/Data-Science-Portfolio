@@ -1,109 +1,66 @@
-Sales Forecasting Model (Ongoing)
-Objective
-Build a basic sales forecasting model using Python to predict monthly sales based on historical data. This project aims to help businesses predict future sales and plan for growth accordingly.
+# German Credit Risk Classification
 
-Tools & Libraries Used
-pandas – for data manipulation
-matplotlib & seaborn – for visualization
-scikit-learn – for machine learning
-statsmodels – for time series forecasting (optional)
-Project Workflow
-1. Data Preparation
-We generate synthetic sales data for the past 3 years. This synthetic dataset represents monthly sales, and it can later be replaced with real-world sales data for more accuracy.
+## Overview
+This project analyzes and classifies credit risk using the German Credit dataset. The dataset is obtained from OpenML and contains information about individuals applying for credit, labeled as either "good" or "bad" credit risks. The project applies various machine learning models to predict credit risk based on given features.
 
-python
-Copy
-Edit
-import pandas as pd
-import numpy as np
+## Project Workflow
+The project consists of three main steps:
 
-# Generate synthetic sales data
-np.random.seed(42)
-months = pd.date_range(start="2020-01-01", periods=36, freq='M')  # 3 years of data
-sales = np.random.randint(200, 500, size=len(months)) + np.linspace(0, 100, len(months))  # Trending upward
+1. **Load and Explore Data**:
+   - The dataset is fetched from OpenML.
+   - The structure of the dataset is examined.
+   - A visualization of class distribution is generated.
 
-# Create DataFrame
-df = pd.DataFrame({'Month': months, 'Sales': sales})
-df.set_index('Month', inplace=True)
-2. Exploratory Data Analysis (EDA)
-We visualize the monthly sales trend to understand the patterns and gain insights from the data.
+2. **Preprocess Data**:
+   - Missing values are handled using appropriate imputation strategies.
+   - Categorical features are encoded using OneHotEncoding.
+   - Numerical features are standardized using StandardScaler.
+   - The dataset is split into training and test sets.
 
-python
-Copy
-Edit
-import matplotlib.pyplot as plt
-import seaborn as sns
+3. **Train and Evaluate Models**:
+   - Three machine learning models are trained: Logistic Regression, Decision Tree, and Random Forest.
+   - Model performance is evaluated using accuracy and classification reports.
+   - Confusion matrices are visualized to assess model predictions.
 
-plt.figure(figsize=(12, 6))
-sns.lineplot(x=df.index, y=df['Sales'], marker='o')
-plt.title("Monthly Sales Trend")
-plt.xlabel("Date")
-plt.ylabel("Sales")
-plt.grid(True)
-plt.show()
-3. Building a Simple Forecasting Model
-We use Linear Regression from scikit-learn to predict future sales based on the existing data. The model is trained on historical data, and we evaluate the results with the Mean Absolute Error (MAE) metric.
+## Installation & Requirements
+To run this project, ensure you have the following dependencies installed:
 
-python
-Copy
-Edit
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error
+```sh
+pip install pandas seaborn matplotlib scikit-learn openml
+```
 
-# Convert date to numerical value for regression
-df['Month_Num'] = range(1, len(df) + 1)
+## How to Run the Project
+Run the script using:
 
-# Split data into training and test sets
-X = df[['Month_Num']]
-y = df['Sales']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
+```sh
+python script_name.py
+```
 
-# Train Linear Regression Model
-model = LinearRegression()
-model.fit(X_train, y_train)
+## Visualizations
+The project generates the following visualizations:
+- A bar chart showing the distribution of credit risk (good vs. bad)
+- Confusion matrices for each trained model to assess performance
 
-# Predict sales
-y_pred = model.predict(X_test)
+## Key Functions
 
-# Evaluate Model
-mae = mean_absolute_error(y_test, y_pred)
-print(f"Mean Absolute Error: {mae:.2f}")
-4. Model Evaluation and Visualization
-We compare the predicted sales with the actual sales using a line plot.
+- `load_and_explore_data()`: Loads and visualizes the dataset.
+- `preprocess_data(df)`: Preprocesses data by handling missing values, encoding categorical variables, and scaling numerical features.
+- `train_and_evaluate_models(X_train, X_test, y_train, y_test)`: Trains models and evaluates them with classification reports and confusion matrices.
 
-python
-Copy
-Edit
-# Plot Predictions vs Actual
-plt.figure(figsize=(10, 5))
-plt.plot(df.index[-len(y_test):], y_test, label="Actual Sales", marker='o')
-plt.plot(df.index[-len(y_test):], y_pred, label="Predicted Sales", linestyle='dashed', marker='x')
-plt.legend()
-plt.title("Actual vs Predicted Sales")
-plt.show()
-Future Improvements
-Explore advanced time series forecasting models such as ARIMA, Prophet, or XGBoost for better accuracy.
-Introduce feature engineering to create additional useful features and improve the model’s performance.
-Implement hyperparameter tuning to optimize the linear regression model or switch to more complex models.
-How to Run the Project
-Clone the repository:
+## Models Used
+The following machine learning models are trained and evaluated:
+1. Logistic Regression
+2. Decision Tree Classifier
+3. Random Forest Classifier
 
-bash
-Copy
-Edit
-git clone https://github.com/your-username/sales-forecasting.git
-Install the required dependencies:
+## Expected Output
+For each model, the script prints:
+- Accuracy score
+- Classification report
+- Confusion matrix visualization
 
-bash
-Copy
-Edit
-pip install -r requirements.txt
-Run the script:
+## Author
+Erdal Beyoglu
 
-bash
-Copy
-Edit
-python sales_forecasting.py
-License
-This project is open-source and available under the MIT License.
+## License
+This project is open-source and available under the [MIT License](LICENSE).
