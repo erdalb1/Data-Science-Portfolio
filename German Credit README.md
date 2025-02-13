@@ -1,44 +1,66 @@
-# German Credit Risk Prediction
+# German Credit Risk Classification
 
-## Project Overview
-The goal of this project is to predict whether a customer is likely to default on a loan (bad credit) or not (good credit) based on various financial and demographic factors. We use the German Credit Dataset from OpenML and apply machine learning algorithms to build a predictive model.
+## Overview
+This project analyzes and classifies credit risk using the German Credit dataset. The dataset is obtained from OpenML and contains information about individuals applying for credit, labeled as either "good" or "bad" credit risks. The project applies various machine learning models to predict credit risk based on given features.
 
-## Objective
-To build a classification model that predicts whether a customer has good or bad credit using various features such as account type, credit history, age, employment, and other financial factors.
+## Project Workflow
+The project consists of three main steps:
 
-## Tools & Libraries Used
-- **pandas** – for data manipulation
-- **seaborn** & **matplotlib** – for data visualization
-- **scikit-learn** – for machine learning
-- **openml** – to fetch the dataset
-- **train_test_split** & **StandardScaler** – for data preprocessing
-- **Logistic Regression**, **Decision Trees**, **Random Forest** – for classification models
+1. **Load and Explore Data**:
+   - The dataset is fetched from OpenML.
+   - The structure of the dataset is examined.
+   - A visualization of class distribution is generated.
 
-## Steps Involved
+2. **Preprocess Data**:
+   - Missing values are handled using appropriate imputation strategies.
+   - Categorical features are encoded using OneHotEncoding.
+   - Numerical features are standardized using StandardScaler.
+   - The dataset is split into training and test sets.
 
-### 1. Load & Explore the Dataset
-The dataset is loaded from OpenML. We first display the first few rows to understand the data structure and check the class distribution (good vs. bad credit).
+3. **Train and Evaluate Models**:
+   - Three machine learning models are trained: Logistic Regression, Decision Tree, and Random Forest.
+   - Model performance is evaluated using accuracy and classification reports.
+   - Confusion matrices are visualized to assess model predictions.
 
-### 2. Data Preprocessing
-Data preprocessing steps include:
-- Handling missing values with imputation.
-- Encoding categorical variables using one-hot encoding.
-- Normalizing numerical features with standard scaling.
-- Splitting the dataset into training and testing sets.
+## Installation & Requirements
+To run this project, ensure you have the following dependencies installed:
 
-### 3. Train Machine Learning Models
-Three machine learning models are trained:
-- **Logistic Regression**
-- **Decision Tree Classifier**
-- **Random Forest Classifier**
-
-### 4. Model Evaluation
-The models are evaluated based on accuracy and detailed classification reports (precision, recall, F1-score). The Random Forest model is currently providing the best results.
+```sh
+pip install pandas seaborn matplotlib scikit-learn openml
+```
 
 ## How to Run the Project
+Run the script using:
 
-### Prerequisites
-Ensure you have the required Python libraries installed. You can install them using the following command:
+```sh
+python script_name.py
+```
 
-```bash
-pip install pandas seaborn matplotlib scikit-learn openml
+## Visualizations
+The project generates the following visualizations:
+- A bar chart showing the distribution of credit risk (good vs. bad)
+- Confusion matrices for each trained model to assess performance
+
+## Key Functions
+
+- `load_and_explore_data()`: Loads and visualizes the dataset.
+- `preprocess_data(df)`: Preprocesses data by handling missing values, encoding categorical variables, and scaling numerical features.
+- `train_and_evaluate_models(X_train, X_test, y_train, y_test)`: Trains models and evaluates them with classification reports and confusion matrices.
+
+## Models Used
+The following machine learning models are trained and evaluated:
+1. Logistic Regression
+2. Decision Tree Classifier
+3. Random Forest Classifier
+
+## Expected Output
+For each model, the script prints:
+- Accuracy score
+- Classification report
+- Confusion matrix visualization
+
+## Author
+Erdal Beyoglu
+
+## License
+This project is open-source and available under the [MIT License](LICENSE).
