@@ -1,0 +1,105 @@
+# Project: German Credit Risk Prediction (Ongoing)
+# Objective: Predict whether a customer is likely to default on a loan based on financial and demographic factors.
+# Tools & Libraries Used
+# pandas – for data manipulation
+# seaborn & matplotlib – for visualization
+# scikit-learn – for machine learning
+# train_test_split, StandardScaler – for preprocessing
+# Logistic Regression, Decision Trees, Random Forest – for classification
+
+# Step1: Load & Explore the Dataset
+# We'll use the German Credit dataset from openml.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.impute import SimpleImputer
+import openml  # To fetch the dataset
+
+
+# Load dataset from OpenML
+dataset = openml.datasets.get_dataset(31)  # ID for German Credit Dataset
+df, _, _, _ = dataset.get_data()
+
+
+# Display first few rows
+print(df.head())
+
+
+# Check class balance
+sns.countplot(x='class', data=df)
+plt.title("Class Distribution: Good vs. Bad Credit Risk")
+plt.show()
+
+
+
+# Step2 : Data Preprocessing
+# We'll handle missing values, encode categorical features, and normalize numerical data.
+python
+CopyEdit
+# Separate features and target variable
+X = df.drop(columns=['class'])
+y = df['class'].apply(lambda x: 1 if x == 'bad' else 0)  # Convert to binary (1 = bad credit, 0 = good credit)
+
+
+# Identify categorical & numerical columns
+categorical_features = X.select_dtypes(include=['object']).columns
+numerical_features = X.select_dtypes(exclude=['object']).columns
+
+
+# Create preprocessing pipeline
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore'))
+])
+
+
+numerical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
+
+
+preprocessor = ColumnTransformer(transformers=[
+    ('num', numerical_transformer, numerical_features),
+    ('cat', categorical_transformer, categorical_features)
+])
+
+
+# Split into training & test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# Transform data
+X_train = preprocessor.fit_transform(X_train)
+X_test = preprocessor.transform(X_test)
+
+
+
+# Step3: Train Machine Learning Models
+# We'll compare Logistic Regression, Decision Trees, and Random Forest.
+# Train models
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "Decision Tree": DecisionTreeClassifier(),
+    "Random Forest": RandomForestClassifier(n_estimators=100)
+}
+
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"{name} Accuracy: {accuracy:.2f}")
+    print(classification_report(y_test, y_pred))
+
+
+
