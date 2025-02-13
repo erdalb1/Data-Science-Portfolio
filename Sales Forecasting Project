@@ -13,7 +13,7 @@ from sklearn.metrics import mean_absolute_error
 def prepare_data():
     # Generate synthetic sales data
     np.random.seed(42)
-    months = pd.date_range(start="2020-01-01", periods=36, freq='M')  # 3 years of data
+    months = pd.date_range(start="2020-01-01", periods=36, freq='ME')  # 3 years of data
     sales = np.random.randint(200, 500, size=len(months)) + np.linspace(0, 100, len(months))  # Trending upward
 
     # Create DataFrame
